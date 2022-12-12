@@ -1,12 +1,20 @@
 const { User, Book } = require('../models');
+const { countDocuments } = require('../models/User');
+const { signToken } = require('../utils/auth');
 
 const resolvers = {
     Query: {
-            user: async(parent, { username, id }) => {
-                return User.findOne({ $or: [{ _id: id }, { username: username }],})
+            users: async() => {
+                return User.find()
+            },
+            me: async (parent, args, context) => {
+                if (context.user) {
+                  return await User.findOne({ _id: context.user._id })
+                }
+                throw new AuthenticationError('Wrong')
             }
     }, 
-    Mutations: {
+    Mutation: {
         addUser: async (parent, { username, email, password }) => {
             const user = await User.create({ username, email, password });
             const token = signToken(user);
@@ -29,6 +37,20 @@ const resolvers = {
       
             return { token, user };
           },
+        saveBook: async (parent, { bookData }, context) => {
+          if (context.user) {
+            return User.findOneAndUpdate({ _id: context.user._id }, { $push: { savedBooks: bookData }}, 
+              { new: true }) //adding new info to the array
+          }
+          throw new AuthenticationError('Wrong')
+          }, 
+        deleteBook: async (parent, args, context) => {
+          if (context.user) {
+            return User.findByIdAndUpdate({ _id: context.user._id }, { $pull: { savedBooks: bookData }},
+              { new: true } )
+          }
+          throw new AuthenticationError('Wrong')
+        }
     }
 };
 

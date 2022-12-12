@@ -1,22 +1,35 @@
 import { gql } from '@apollo/client';
 
-// route to get logged in user's info (needs the token)
-export const GET_ME = gql`
-  mutation getMe()
-`;
-
-
 export const CREATE_USER = gql`
-  mutation createUser()
+mutation Mutation($username: String!, $email: String!, $password: String!) {
+  addUser(username: $username, email: $email, password: $password) {
+    token
+    user {
+      _id
+      email
+      password
+      savedBooks {
+        authors
+        bookId
+        description
+        image
+        link
+        title
+      }
+      username
+    }
+  }
+}
 `;
 
 export const LOGIN_USER = gql`
-mutation login($email: String!, $password: String!) {
+mutation Mutation($email: String!, $password: String!) {
   login(email: $email, password: $password) {
     token
-    profile {
+    user {
       _id
-      name
+      email
+      username
     }
   }
 }
@@ -24,19 +37,42 @@ mutation login($email: String!, $password: String!) {
 
 // save book data for a logged in user
 export const SAVE_BOOK = gql`
-  mutation saveBook() {
+mutation Mutation($bookData: BookInput!) {
+  saveBook(bookData: $bookData) {
+    _id
+    email
+    password
+    savedBooks {
+      authors
+      description
+      bookId
+      image
+      link
+      title
+    }
+    username
   }
+}
 `;
 
 // remove saved book data for a logged in user
 export const DELETE_BOOK = gql`
-  mutation deleteBook($book: String!) {
-    deleteBook(book: $book) {
-      _id
-      name
-      books
+mutation Mutation($bookData: BookInput!) {
+  deleteBook(bookData: $bookData) {
+    _id
+    username
+    email
+    password
+    savedBooks {
+      authors
+      bookId
+      description
+      image
+      link
+      title
     }
   }
+}
 `;
 
 // make a search to google books api
